@@ -3,8 +3,27 @@ import axios from 'axios';
 import apiClient from '../utils/apiClient';
 
 const AdminFilePage = () => {
+  
   const [files, setFiles] = useState([]);
   const token = localStorage.getItem('accessToken'); // Retrieve JWT token from storage
+  const [csrfToken, setCsrfToken] = useState(null); // State to store CSRF token
+
+  useEffect(() => {
+    const fetchCsrfToken = async () => {
+      try {
+        const response = await apiClient.get('http://localhost:8000/api/csrf/', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setCsrfToken(response.data.csrfToken); // Adjust based on the CSRF endpoint response format
+      } catch (error) {
+        console.error('Error fetching CSRF token:', error.response?.data || error.message);
+      }
+    };
+
+    fetchCsrfToken();
+  }, [token]);
 
   // Fetch all files
   useEffect(() => {
@@ -28,10 +47,12 @@ const AdminFilePage = () => {
 
   // Delete a file
   const deleteFile = async (fileId) => {
+    console.log(csrfToken,"csrfToken");
     try {
-      await axios.delete(`http://localhost:8000/api/admin/files/${fileId}/`, {
+      await apiClient.delete(`http://localhost:8000/api/admin/files/${fileId}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          'x-csrftoken': csrfToken, // Include CSRF token
         },
       });
       // Update the file list after deletion

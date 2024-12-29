@@ -8,11 +8,9 @@ import DashboardPage from './pages/dashboardPage';
 import UserManagementPage from './pages/userManagementPage';
 import FileSharingPage from './pages/shareFilePage';
 import ProtectedRoute from './components/protectedRoute';
-import AdminUserPage from './pages/adminUserPage';
-import AdminFilePage from './pages/adminPage';
 import apiClient from './utils/apiClient';
 import DownloadPage from './pages/downloadPage';
-
+import EnableMFA from './pages/enableMFA';
 function App() {
   const dispatch = useDispatch();
 
@@ -48,17 +46,13 @@ function App() {
       <Route path="/" element={<HomePage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
+      <Route path="/enable-mfa" element={<EnableMFA />} />
       <Route element={<ProtectedRoute />}>
         <Route path="/download/:uid" element={<DownloadPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/users" element={<UserManagementPage />} />
         <Route path="/share/:fileId" element={<FileSharingPage />} />
       </Route>
-      <Route element={<ProtectedRoute requiredRole="admin" />}>
-        <Route path="/admin/users" element={<AdminUserPage />} />
-        <Route path="/admin/files" element={<AdminFilePage />} />
-      </Route>
-
     </Routes>
   );
 }

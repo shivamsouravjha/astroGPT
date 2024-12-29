@@ -71,7 +71,16 @@ const LoginPage = () => {
         // If credentials are valid, move to step 2
         setStep(2);
       } catch (error) {
+        if (error.response && error.response.status === 403) {
+          const errorData = error.response.data;
+          if (errorData.error === 'MFA is not enabled' && errorData.redirect) {
+            // Redirect user to the enable MFA page
+            navigate(errorData.redirect, { state: { username, password } });
+            return;
+          }
+        }
         console.error('Login failed:', error.response ? error.response.data : error.message);
+
       }
     } else if (step === 2) {
       try {

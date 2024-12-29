@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import apiClient from '../utils/apiClient'; // Import the Axios instance
+import jwtDecode from 'jwt-decode';
+
 async function encryptFile(file) {
     const key = await window.crypto.subtle.generateKey(
         {
@@ -34,6 +36,17 @@ async function encryptFile(file) {
 }
 function FileUpload() {
     const [file, setFile] = useState(null);
+    const [userRole, setUserRole] = useState(null);
+
+    useEffect(() => {
+        const token = localStorage.getItem('accessToken'); // Adjust based on how you store the token
+        if (token) {
+            const decoded = jwtDecode(token);
+            console.log(decoded.role, "decoded");
+            setUserRole(decoded.role); // Extract the role from the token
+        }
+    }, []);
+
 
     const handleFileChange = (e) => {
         setFile(e.target.files[0]);
@@ -49,9 +62,6 @@ function FileUpload() {
         formData.append('iv', JSON.stringify(iv)); // Initialization vector
         console.log(JSON.stringify(encryptionKey), "key");
         console.log(JSON.stringify(iv), "iv");
-        const sharedWith = [1, 2, 3]; // IDs of users to share the file with
-        formData.append('shared_with', JSON.stringify(sharedWith)); sharedWith.forEach((id) => formData.append('shared_with', id));
-
         try {
             const response = await apiClient.post('/upload/', formData, {
                 headers: {
@@ -66,10 +76,14 @@ function FileUpload() {
 
     return (
         <div>
-            <input type="file" onChange={handleFileChange} />
-            <button onClick={handleUpload}>Upload</button>
+            {userRole !== 'guest' && (
+                <>
+                    <input type="file" onChange={handleFileChange} />
+                    <button onClick={handleUpload}>Upload</button>
+                </>
+            )}
         </div>
     );
-}
 
+}
 export default FileUpload;

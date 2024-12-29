@@ -61,7 +61,7 @@ function DownloadPage() {
                 const parsedIV = JSON.parse(iv); // Parse the IV
         
                 // Fetch encrypted file
-                const encryptedFileResponse = await fetch(`http://127.0.0.1:8000/uploads/tools.go`);
+                const encryptedFileResponse = await fetch(`http://127.0.0.1:8000/`+`${encrypted_file_url}`);
                 const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
                 console.log("Encrypted File Size:", encryptedFileBuffer.byteLength);
         
