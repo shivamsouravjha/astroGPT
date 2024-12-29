@@ -9,7 +9,7 @@ const FileSharingPage = () => {
   const handleShare = async () => {
     try {
       await axios.post(
-        `http://localhost:8000/api/files/${fileId}/share/`,
+        `https://localhost:8000/api/files/${fileId}/share/`,
         { userId: sharedWith },
         {
           headers: {

@@ -39,7 +39,7 @@ const RegisterPage = () => {
 
         try {
             const response = await axios.post(
-                'http://127.0.0.1:8000/api/register/',
+                'https://127.0.0.1:8000/api/register/',
                 {
                     username: formData.username,
                     email: formData.email,
@@ -68,7 +68,7 @@ const RegisterPage = () => {
     const handleVerifyMfa = async () => {
         try {
             const response = await axios.post(
-                'http://127.0.0.1:8000/api/verify-mfa/',
+                'https://127.0.0.1:8000/api/verify-mfa/',
                 {
                     username: formData.username, // Pass username to identify the user
                     totp_code: totpCode, // Pass the TOTP code entered by the user

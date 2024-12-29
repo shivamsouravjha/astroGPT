@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8000/api/',
+  baseURL: 'https://localhost:8000/api/',
 });
 
 // Request Interceptor
@@ -39,7 +39,7 @@ apiClient.interceptors.response.use(
           return Promise.reject(error);
         }
 
-        const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+        const response = await axios.post('https://localhost:8000/api/token/refresh/', {
           refresh: refreshToken,
         });
 

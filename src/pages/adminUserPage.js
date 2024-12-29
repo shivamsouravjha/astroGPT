@@ -11,7 +11,7 @@ const AdminUserPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get('http://localhost:8000/api/admin/users/', {
+        const response = await apiClient.get('https://localhost:8000/api/admin/users/', {
           headers: {
             Authorization: `Bearer ${token}`, // Include JWT in headers
           },
@@ -29,7 +29,7 @@ const AdminUserPage = () => {
   // Delete a user
   const deleteUser = async (userId) => {
     try {
-      await axios.delete(`http://localhost:8000/api/admin/users/${userId}`, {
+      await axios.delete(`https://localhost:8000/api/admin/users/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -45,7 +45,7 @@ const AdminUserPage = () => {
   const updateUserRole = async (userId, role) => {
     try {
       await apiClient.patch(
-        `http://localhost:8000/api/admin/users/${userId}/`,
+        `https://localhost:8000/api/admin/users/${userId}/`,
         { role },
         {
           headers: {

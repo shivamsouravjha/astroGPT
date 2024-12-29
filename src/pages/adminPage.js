@@ -11,7 +11,7 @@ const AdminFilePage = () => {
   useEffect(() => {
     const fetchCsrfToken = async () => {
       try {
-        const response = await apiClient.get('http://localhost:8000/api/csrf/', {
+        const response = await apiClient.get('https://localhost:8000/api/csrf/', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -29,7 +29,7 @@ const AdminFilePage = () => {
   useEffect(() => {
     const fetchFiles = async () => {
       try {
-        const response = await apiClient.get('http://localhost:8000/api/admin/files/', {
+        const response = await apiClient.get('https://localhost:8000/api/admin/files/', {
           headers: {
             Authorization: `Bearer ${token}`, // Include JWT in headers
           },
@@ -49,7 +49,7 @@ const AdminFilePage = () => {
   const deleteFile = async (fileId) => {
     console.log(csrfToken,"csrfToken");
     try {
-      await apiClient.delete(`http://localhost:8000/api/admin/files/${fileId}/`, {
+      await apiClient.delete(`https://localhost:8000/api/admin/files/${fileId}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
           'x-csrftoken': csrfToken, // Include CSRF token

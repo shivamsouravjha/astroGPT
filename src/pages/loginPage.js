@@ -20,7 +20,7 @@ const LoginPage = () => {
       if (accessToken) {
         try {
           // Validate the access token
-          await axios.get('http://localhost:8000/api/auth/validate/', {
+          await axios.get('https://localhost:8000/api/auth/validate/', {
             headers: {
               Authorization: `Bearer ${accessToken}`,
             },
@@ -32,7 +32,7 @@ const LoginPage = () => {
           if (refreshToken) {
             try {
               // Refresh the token if expired
-              const response = await axios.post('http://localhost:8000/api/token/refresh/', {
+              const response = await axios.post('https://localhost:8000/api/token/refresh/', {
                 refresh: refreshToken,
               });
               const newAccessToken = response.data.access;
@@ -59,7 +59,7 @@ const LoginPage = () => {
       try {
         // Step 1: Validate username and password
         const response = await axios.post(
-          'http://localhost:8000/api/login/',
+          'https://localhost:8000/api/login/',
           { username, password, step: '1' },
           {
             headers: {
@@ -86,7 +86,7 @@ const LoginPage = () => {
       try {
         // Step 2: Validate TOTP
         const response = await axios.post(
-          'http://localhost:8000/api/login/',
+          'https://localhost:8000/api/login/',
           { username, totp, step: '2' },
           {
             headers: {

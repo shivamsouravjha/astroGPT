@@ -26,7 +26,7 @@ const EnableMFA = () => {
     const generateTotpSecret = async () => {
         try {
             const response = await axios.post(
-                'http://localhost:8000/api/mfa/generate-secret/',
+                'https://localhost:8000/api/mfa/generate-secret/',
                 { username, password }, // Include username and password
                 { withCredentials: true }
             );
@@ -40,7 +40,7 @@ const EnableMFA = () => {
     const enableMfa = async () => {
         try {
             await axios.post(
-                'http://localhost:8000/api/mfa/enable/',
+                'https://localhost:8000/api/mfa/enable/',
                 { username, password, totp_secret: totpSecret, totp_code: totpCode }, // Include username and password
                 {
                     headers: {

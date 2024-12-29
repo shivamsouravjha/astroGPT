@@ -8,7 +8,7 @@ const UserManagementPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get('http://localhost:8000/api/users/', {
+        const response = await apiClient.get('https://localhost:8000/api/users/', {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
           },

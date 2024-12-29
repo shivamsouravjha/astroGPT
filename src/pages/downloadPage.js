@@ -50,7 +50,7 @@ function DownloadPage() {
         const fetchAndDecryptFile = async () => {
             try {
                 // Fetch metadata for the encrypted file
-                const response = await apiClient.get(`http://localhost:8000/api/files/${uid}/download/`, {
+                const response = await apiClient.get(`https://localhost:8000/api/files/${uid}/download/`, {
                     responseType: 'json', // Important: Ensures the file is downloaded as binary
                 });
 
@@ -61,7 +61,7 @@ function DownloadPage() {
                 const parsedIV = JSON.parse(iv); // Parse the IV
         
                 // Fetch encrypted file
-                const encryptedFileResponse = await fetch(`http://127.0.0.1:8000/`+`${encrypted_file_url}`);
+                const encryptedFileResponse = await fetch(`https://127.0.0.1:8000/`+`${encrypted_file_url}`);
                 const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
                 console.log("Encrypted File Size:", encryptedFileBuffer.byteLength);
         

@@ -55,7 +55,7 @@ const FileList = () => {
     const handleViewFile = async (fileId) => {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await apiClient.get(`http://localhost:8000/api/files/${fileId}/download/`, {
+            const response = await apiClient.get(`https://localhost:8000/api/files/${fileId}/download/`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'json', // Get metadata for decryption
             });
@@ -63,7 +63,7 @@ const FileList = () => {
             const { encrypted_file_url, encryption_key, iv, original_filename } = response.data;
             const parsedKey = JSON.parse(encryption_key); // Parse the key
             const parsedIV = JSON.parse(iv); // Parse the IV
-            const encryptedFileResponse = await fetch(`http://127.0.0.1:8000/` + `${encrypted_file_url}`);
+            const encryptedFileResponse = await fetch(`https://127.0.0.1:8000/` + `${encrypted_file_url}`);
             const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
             console.log("Encrypted File Size:", original_filename);
 
@@ -94,14 +94,14 @@ const FileList = () => {
         try {
             const token = localStorage.getItem('accessToken');
             console.log("fileId", fileId);
-            const response = await apiClient.get(`http://localhost:8000/api/files/${fileId}/download/`, {
+            const response = await apiClient.get(`https://localhost:8000/api/files/${fileId}/download/`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'json',
             });
             const { encrypted_file_url, encryption_key, iv, original_filename } = response.data;
             const parsedKey = JSON.parse(encryption_key); // Parse the key
             const parsedIV = JSON.parse(iv); // Parse the IV
-            const encryptedFileResponse = await fetch(`http://127.0.0.1:8000/` + `${encrypted_file_url}`);
+            const encryptedFileResponse = await fetch(`https://127.0.0.1:8000/` + `${encrypted_file_url}`);
             const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
             console.log("Encrypted File Size:", encryptedFileBuffer.byteLength);
 
@@ -124,7 +124,7 @@ const FileList = () => {
         const fetchCsrfToken = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const response = await apiClient.get('http://localhost:8000/api/csrf/', {
+                const response = await apiClient.get('https://localhost:8000/api/csrf/', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setCsrfToken(response.data.csrfToken);
@@ -140,13 +140,13 @@ const FileList = () => {
         const fetchFiles = async () => {
             try {
                 const token = localStorage.getItem('accessToken');
-                const filesResponse = await apiClient.get('http://localhost:8000/api/files/', {
+                const filesResponse = await apiClient.get('https://localhost:8000/api/files/', {
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 setFiles(filesResponse.data);
 
                 const sharedFilesResponse = await apiClient.get(
-                    'http://localhost:8000/api/files/shared-with-you/',
+                    'https://localhost:8000/api/files/shared-with-you/',
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
                 setSharedFiles(sharedFilesResponse.data);
@@ -161,7 +161,7 @@ const FileList = () => {
     const handleSearchUsers = async (query) => {
         try {
             const token = localStorage.getItem('accessToken');
-            const response = await apiClient.get(`http://localhost:8000/api/users/?search=${query}`, {
+            const response = await apiClient.get(`https://localhost:8000/api/users/?search=${query}`, {
                 headers: { Authorization: `Bearer ${token}` },
             });
             setSearchResults(response.data);
@@ -180,7 +180,7 @@ const FileList = () => {
             const token = localStorage.getItem('accessToken');
             console.log(permission,"permission");
             const response = await apiClient.post(
-                `http://localhost:8000/api/files/${selectedFile.id}/share/`,
+                `https://localhost:8000/api/files/${selectedFile.id}/share/`,
                 { users: [selectedUser], permission, expires_in: expiry * 60, user_id: selectedUser }, // Convert minutes to seconds
                 {
                     headers: {
