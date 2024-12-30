@@ -1,20 +1,17 @@
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import apiClient from '../utils/apiClient';
 
 const FileSharingPage = () => {
   const { fileId } = useParams();
   const [sharedWith, setSharedWith] = useState('');
-
   const handleShare = async () => {
     try {
-      await axios.post(
+      await apiClient.post(
         `https://localhost:8000/api/files/${fileId}/share/`,
         { userId: sharedWith },
         {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
+          withCredentials: true,
         }
       );
       alert('File shared successfully!');

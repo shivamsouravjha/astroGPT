@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../utils/apiClient'; // Import the Axios instance
-import jwtDecode from 'jwt-decode';
 
 async function encryptFile(file) {
     const key = await window.crypto.subtle.generateKey(
@@ -39,12 +38,20 @@ function FileUpload() {
     const [userRole, setUserRole] = useState(null);
 
     useEffect(() => {
-        const token = localStorage.getItem('accessToken'); // Adjust based on how you store the token
-        if (token) {
-            const decoded = jwtDecode(token);
-            console.log(decoded.role, "decoded");
-            setUserRole(decoded.role); // Extract the role from the token
+        async function fetchUser() {
+            try {
+                console.log('fetching user');
+                // The server will check your HttpOnly cookies automatically
+                const response = await apiClient.get('https://localhost:8000/api/me/', {
+                    withCredentials: true,
+                });
+                setUserRole(response.data.role); // Extract the role from the token
+            } catch (error) {
+                console.error('Error fetching user:', error);
+                // handle not-authenticated or other error
+            }
         }
+        fetchUser();
     }, []);
 
 
@@ -60,15 +67,12 @@ function FileUpload() {
         formData.append('file', encryptedFile, originalFilename); // Encrypted file
         formData.append('key', JSON.stringify(encryptionKey)); // Encryption key
         formData.append('iv', JSON.stringify(iv)); // Initialization vector
-        console.log(JSON.stringify(encryptionKey), "key");
-        console.log(JSON.stringify(iv), "iv");
         try {
-            const response = await apiClient.post('/upload/', formData, {
+            await apiClient.post('/upload/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
             });
-            console.log('File uploaded successfully:', response.data);
         } catch (error) {
             console.error('Error uploading file:', error);
         }

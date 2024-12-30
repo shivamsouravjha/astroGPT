@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import { fetchCsrfToken } from '../utils/csrf';
 import apiClient from '../utils/apiClient';
 
 const AdminUserPage = () => {
@@ -11,12 +11,7 @@ const AdminUserPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get('https://localhost:8000/api/admin/users/', {
-          headers: {
-            Authorization: `Bearer ${token}`, // Include JWT in headers
-          },
-        });
-        console.log(response.data, "api response");
+        const response = await apiClient.get('https://localhost:8000/api/admin/users/', {});
         setUsers(response.data.results || response.data); // Adjust based on response format
       } catch (error) {
         console.error('Error fetching users:', error.response?.data || error.message);
@@ -24,15 +19,14 @@ const AdminUserPage = () => {
     };
 
     fetchUsers();
+    fetchCsrfToken();
   }, [token]);
 
   // Delete a user
   const deleteUser = async (userId) => {
     try {
-      await axios.delete(`https://localhost:8000/api/admin/users/${userId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      await apiClient.delete(`https://localhost:8000/api/admin/users/${userId}/`, {
+        withCredentials: true, // Ensure cookies are sent with the request
       });
       // Update the user list after deletion
       setUsers(users.filter((user) => user.id !== userId));
@@ -48,9 +42,7 @@ const AdminUserPage = () => {
         `https://localhost:8000/api/admin/users/${userId}/`,
         { role },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+
         }
       );
       // Update the user role in the state

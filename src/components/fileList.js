@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import apiClient from '../utils/apiClient';
-
+import { fetchCsrfToken } from '../utils/csrf';
 const FileList = () => {
     const [files, setFiles] = useState([]);
     const [sharedFiles, setSharedFiles] = useState([]); // Files shared with the user
@@ -13,8 +13,17 @@ const FileList = () => {
     const [permission, setPermission] = useState('view'); // Selected permission
     const [expiry, setExpiry] = useState(60); // Default expiry time: 60 minutes
     const [generatedLink, setGeneratedLink] = useState(''); // Generated link
-    const [csrfToken, setCsrfToken] = useState(null); // State to store CSRF token
     const [previewFile, setPreviewFile] = useState(null); // Content for view-only preview
+
+    function base64ToUint8Array(base64String) {
+        const binaryString = atob(base64String);
+        const binaryLength = binaryString.length;
+        const bytes = new Uint8Array(binaryLength);
+        for (let i = 0; i < binaryLength; i++) {
+            bytes[i] = binaryString.charCodeAt(i);
+        }
+        return bytes;
+    }
 
     async function decryptFile(encryptedFile, encryptionKey, iv) {
         // Import the encryption key
@@ -27,11 +36,8 @@ const FileList = () => {
             true,
             ['decrypt']
         );
-        console.log("Imported Key:", key);
-
         // Convert IV to Uint8Array
         const ivArray = new Uint8Array(iv);
-        console.log("IV Array:", ivArray);
 
         // Decrypt the file
         let decryptedData;
@@ -60,32 +66,26 @@ const FileList = () => {
                 responseType: 'json', // Get metadata for decryption
             });
 
-            const { encrypted_file_url, encryption_key, iv, original_filename } = response.data;
-            const parsedKey = JSON.parse(encryption_key); // Parse the key
-            const parsedIV = JSON.parse(iv); // Parse the IV
-            const encryptedFileResponse = await fetch(`https://127.0.0.1:8000/` + `${encrypted_file_url}`);
-            const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
-            console.log("Encrypted File Size:", original_filename);
 
-            // Decrypt the file
+            const { partially_decrypted_file, client_key, client_iv, original_filename } = response.data;
+            const parsedKey = JSON.parse(client_key); // Parse the key
+            const parsedIV = JSON.parse(client_iv); // Parse the IV
+            const encryptedFileBuffer = base64ToUint8Array(partially_decrypted_file);
             const decryptedFile = await decryptFile(encryptedFileBuffer, parsedKey, parsedIV);
             if (original_filename.toLowerCase().endsWith('.txt')) {
                 // Decode text content
                 const decoder = new TextDecoder('utf-8'); // Adjust encoding as needed
                 const textContent = decoder.decode(decryptedFile);
-                console.log('Decrypted Text Content:', textContent);
                 setPreviewFile({ type: 'text', content: textContent });
             } else {
                 // Handle binary files
                 const blob = new Blob([decryptedFile], { type: 'image' });
                 const objectURL = URL.createObjectURL(blob);
 
-                console.log('Decrypted Binary File URL:', objectURL);
                 setPreviewFile({ type: 'image', url: objectURL });
             }
 
         } catch (error) {
-            console.log("error", error);
             setError('Failed to view the file. Please try again.', error);
         }
     };
@@ -93,21 +93,15 @@ const FileList = () => {
     const handleDownloadFile = async (fileId, fileName) => {
         try {
             const token = localStorage.getItem('accessToken');
-            console.log("fileId", fileId);
             const response = await apiClient.get(`https://localhost:8000/api/files/${fileId}/download/`, {
                 headers: { Authorization: `Bearer ${token}` },
                 responseType: 'json',
             });
-            const { encrypted_file_url, encryption_key, iv, original_filename } = response.data;
-            const parsedKey = JSON.parse(encryption_key); // Parse the key
-            const parsedIV = JSON.parse(iv); // Parse the IV
-            const encryptedFileResponse = await fetch(`https://127.0.0.1:8000/` + `${encrypted_file_url}`);
-            const encryptedFileBuffer = await encryptedFileResponse.arrayBuffer();
-            console.log("Encrypted File Size:", encryptedFileBuffer.byteLength);
-
-            // Decrypt the file
+            const { partially_decrypted_file, client_key, client_iv, original_filename } = response.data;
+            const parsedKey = JSON.parse(client_key); // Parse the key
+            const parsedIV = JSON.parse(client_iv); // Parse the IV
+            const encryptedFileBuffer = base64ToUint8Array(partially_decrypted_file);
             const decryptedFile = await decryptFile(encryptedFileBuffer, parsedKey, parsedIV);
-
             const url = window.URL.createObjectURL(new Blob([new Uint8Array(decryptedFile)]));
             const link = document.createElement('a');
             link.href = url;
@@ -121,18 +115,6 @@ const FileList = () => {
     };
 
     useEffect(() => {
-        const fetchCsrfToken = async () => {
-            try {
-                const token = localStorage.getItem('accessToken');
-                const response = await apiClient.get('https://localhost:8000/api/csrf/', {
-                    headers: { Authorization: `Bearer ${token}` },
-                });
-                setCsrfToken(response.data.csrfToken);
-            } catch (error) {
-                console.error('Error fetching CSRF token:', error.response?.data || error.message);
-            }
-        };
-
         fetchCsrfToken();
     }, []);
 
@@ -169,7 +151,6 @@ const FileList = () => {
             setError('Failed to search users. Please try again.');
         }
     };
-
     const handleShareWithUsers = async () => {
         if (!selectedFile || !selectedUser) {
             alert('Please select a user and a file.');
@@ -177,20 +158,15 @@ const FileList = () => {
         }
 
         try {
-            const token = localStorage.getItem('accessToken');
-            console.log(permission,"permission");
             const response = await apiClient.post(
                 `https://localhost:8000/api/files/${selectedFile.id}/share/`,
                 { users: [selectedUser], permission, expires_in: expiry * 60, user_id: selectedUser }, // Convert minutes to seconds
                 {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                        'x-csrftoken': csrfToken, // Include CSRF token
-                    },
+                    withCredentials: true, // Include cookies for authentication
                 }
             );
-            const uid = response.data.uid; // Backend should return the UID
-            const frontendLink = `http://localhost:3000/download/${uid}`; // Construct frontend link
+            const token = response.data.token; // Backend should return the UID
+            const frontendLink = `http://localhost:3000/download/${token}`; // Construct frontend link
             setGeneratedLink(frontendLink);
             alert('File shared successfully!');
         } catch (error) {
@@ -212,7 +188,7 @@ const FileList = () => {
                 <ul>
                     {files.map((file) => (
                         <li key={file.uuid} style={{ marginBottom: '20px' }}>
-                            <h4>{file.name}</h4>
+                            <h4>{file.original_filename}</h4>
                             <p>Uploaded by: {file.owner}</p>
                             <button onClick={() => handleOpenShareForm(file)}>Share</button>
                             <button onClick={() => handleDownloadFile(file.uuid, file.name)}>Download</button>
@@ -254,9 +230,10 @@ const FileList = () => {
                     {previewFile.type === 'image' ? (
                         <img
                             src={previewFile.url}
-                            alt="Image Preview"
+                            alt="Preview of uploaded file" // Describe what the image represents
                             style={{ maxWidth: '100%', maxHeight: '500px' }}
                         />
+
                     ) : previewFile.type === 'text' ? (
                         <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
                             {previewFile.content}

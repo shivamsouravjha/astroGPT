@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import apiClient from '../utils/apiClient';
 
 const UserManagementPage = () => {
@@ -8,11 +7,7 @@ const UserManagementPage = () => {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const response = await apiClient.get('https://localhost:8000/api/users/', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-          },
-        });
+        const response = await apiClient.get('https://localhost:8000/api/users/', {});
         setUsers(response.data);
       } catch (error) {
         console.error('Failed to fetch users:', error);
